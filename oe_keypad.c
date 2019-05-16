@@ -218,3 +218,19 @@ int keypad_del(struct json_decoder *jsond)
 
     return 0;
 }
+
+int keypad_del_all(void)
+{
+	int i;
+
+	for (i=0;i<MAX_KEYPAD_DESCRIPTOR;i++) {
+		if (kd.id[i]) {
+			if(kd.id[i]->keypad)
+				lv_obj_del(kd.id[i]->keypad);
+			free(kd.id[i]);
+			kd.id[i]=NULL;
+		}
+	}
+
+    return 0;
+}

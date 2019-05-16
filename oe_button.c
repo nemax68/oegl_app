@@ -62,6 +62,34 @@ int init_button(void)
 	return 0;
 }
 
+static void deref_btn_desc(struct btn_desc **ref)
+{
+	struct btn_desc *id=*ref;
+
+	if(id->button)
+		lv_obj_del(id->button);
+	if(id->refr_task)
+		lv_task_del(id->refr_task);
+	if(id)
+		free(id);
+	*ref=NULL;
+}
+
+static int find_button_by_name(int *id, char *name)
+{
+	int i;
+	for (i=0;i<MAX_BUTTON_DESCRIPTOR;i++) {
+		if (bd.id[i]) {
+			if (strcmp(bd.id[i]->name,name)==0) {
+				*id=i;
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 /**
  * Called when a button is released
  * @param btn pointer to the released button
@@ -94,8 +122,10 @@ static  void btn_close(void * btn)
 
 		/*delete task */
 		lvbtn->free_num = id & ~BUTTON_OPERATION_RUNNING;
-		if(p->refr_task)
+		if (p->refr_task) {
 			lv_task_del(p->refr_task);
+			p->refr_task=NULL;
+		}
 	}
 }
 
@@ -156,54 +186,43 @@ static  lv_res_t btn_action(lv_obj_t * btn)
 
 int button_add(struct json_decoder *jsond)
 {
-	int i;
-	int rgb;
 	struct btn_desc *p;
+	int i,found;
 
-	for (i=0;i<MAX_BUTTON_DESCRIPTOR;i++) {
-		if(bd.id[i]==NULL)
-			break;
+	found=find_button_by_name(&i,jsond->name);
+
+	if (!found) {
+		for (i=0;i<MAX_BUTTON_DESCRIPTOR;i++) {
+			if(bd.id[i]==NULL)
+				break;
+		}
+
+		if(i==MAX_BUTTON_DESCRIPTOR)
+			return(ENOMEM);
+
+		p=malloc(sizeof(struct btn_desc));
+		if(p==NULL)
+			return(ENOMEM);
+		memset(p,0,sizeof(struct btn_desc));
+
+		bd.id[i]=p;
+
+		memset(p,0,sizeof(struct btn_desc));
+		strcpy(p->name,jsond->name);
+
+		p->button = lv_btn_create(lv_scr_act(), NULL);          		/*Create a button on the currently loaded screen*/
+		p->button_label = lv_label_create(p->button, NULL);				/*Create a label on the current button*/
+		lv_style_copy(&p->button_style, &lv_style_btn_rel);		/*Create style */
+		p->button->free_num=i;											/*link obj_id */
+		/* CUSTOM BUTTON STYLE */
+		lv_btn_set_action(p->button, LV_BTN_ACTION_CLICK, btn_action); /*Set function to be called when the button is released*/
+
+	} else {
+		p=bd.id[i];
 	}
 
-	if(i==MAX_BUTTON_DESCRIPTOR)
-		return(ENOMEM);
-
-	bd.id[i]=malloc(sizeof(struct btn_desc));
-	if(bd.id[i]==NULL)
-		return(ENOMEM);
-
-	p=bd.id[i];
-
-	strcpy(p->name,jsond->name);
-
-	printf("Create button (%s) (%s)",p->name,jsond->name);
-
-	p->button = lv_btn_create(lv_scr_act(), NULL);          		/*Create a button on the currently loaded screen*/
-	p->button_label = lv_label_create(p->button, NULL);				/*Create a label on the current button*/
-	lv_style_copy(&p->button_style, &lv_style_pretty_color);		/*Create style */
-	p->button->free_num=i;													/*link obj_id */
-	/* CUSTOM BUTTON STYLE */
-
-	rgb=color_conv(jsond->font.color);
-	p->button_style.text.color = RGB_2_16bit(rgb);
-
-	switch(jsond->font.size){
-		case 10: p->button_style.text.font = &lv_font_dejavu_10; break;
-		case 20: p->button_style.text.font = &lv_font_dejavu_20; break;
-		case 30: p->button_style.text.font = &lv_font_dejavu_30; break;
-		default: p->button_style.text.font = &lv_font_dejavu_40;
-	}
-
-	rgb=color_conv(jsond->color.main);
-	p->button_style.body.main_color = RGB_2_16bit(rgb);
-	rgb=color_conv(jsond->color.grad);
-	p->button_style.body.grad_color = RGB_2_16bit(rgb);
-	p->button_style.body.radius = jsond->border.radius;
-	rgb=color_conv(jsond->border.color);
-	p->button_style.body.border.color = RGB_2_16bit(rgb);
-	p->button_style.body.border.width = jsond->border.size;
-
-	lv_btn_set_action(p->button, LV_BTN_ACTION_CLICK, btn_action); /*Set function to be called when the button is released*/
+	set_text_style(&p->button_style, jsond);
+	set_body_style(&p->button_style, jsond);
 
 	lv_obj_set_size(p->button,jsond->size.x,jsond->size.y);
 	lv_obj_set_pos(p->button,jsond->pos.x, jsond->pos.y);
@@ -238,6 +257,22 @@ int button_del(struct json_decoder *jsond)
 				free(bd.id[i]);
 				bd.id[i]=NULL;
 			}
+		}
+	}
+
+    return 0;
+}
+
+int button_del_all(void)
+{
+	int i;
+
+	for (i=0;i<MAX_BUTTON_DESCRIPTOR;i++) {
+		if (bd.id[i]) {
+			if(bd.id[i]->button)
+				lv_obj_del(bd.id[i]->button);
+			free(bd.id[i]);
+			bd.id[i]=NULL;
 		}
 	}
 

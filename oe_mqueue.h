@@ -24,7 +24,7 @@ extern "C" {
 #define QUEUE_GUI_EVENT			"/gui_event"
 #define QUEUE_GUI_CMD			"/gui_cmd"
 
-#define POSIX_CMD_BUFFER_SIZE       256
+#define POSIX_CMD_BUFFER_SIZE       1024
 #define POSIX_EVT_BUFFER_SIZE       1024
 
 /**********************

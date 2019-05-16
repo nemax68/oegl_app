@@ -11,19 +11,11 @@
 #include<json-c/json.h>
 
 #include"oe_json.h"
+#include"oe_gui.h"
 
 enum typefunc {
 	IMAGE_FUNCTION,
 };
-
-int image_add(struct json_decoder *);
-int image_del(struct json_decoder *);
-int button_add(struct json_decoder *);
-int button_del(struct json_decoder *);
-int keypad_add(struct json_decoder *);
-int keypad_del(struct json_decoder *);
-int clear_screen(struct json_decoder *);
-
 
 static const struct json_function jf[] = {
 		{"addimage", 	image_add},
@@ -33,6 +25,10 @@ static const struct json_function jf[] = {
 		{"delbutton", 	button_del},
 		{"addkeypad", 	keypad_add},
 		{"delkeypad", 	keypad_del},
+		{"addtext", 	text_add},
+		{"addboxtext", 	text_box_add},
+		{"deltext", 	text_del},
+		{"delboxtext", 	text_del},
 		{"",			NULL}
 };
 
@@ -51,13 +47,13 @@ int json_parser(char *buffer)
 	struct json_object *param;
 	struct json_object *color;
 
-	char				*str;
+	char				*str,*pt;
 	struct json_decoder jd;
 	const struct json_function *pjf=jf;
 
 	memset(&jd,0,sizeof(jd));
 
-	printf("JSON: %s\n",buffer);
+	//printf("JSON: %s\n",buffer);
 
 	parsed_json = json_tokener_parse(buffer);
 	if (parsed_json) {
@@ -152,7 +148,16 @@ int json_parser(char *buffer)
 		// extract text
 		if( json_object_object_get_ex(parsed_json, "text", &text) ) {
 			str=(char *)json_object_get_string(text);
-			strcpy(jd.text,str);
+			pt=jd.text;
+			while (*str) {
+				if( (*str==92) && (*(str+1)==110) ) {
+					*pt++=0x0a;
+					str+=2;
+				}else{
+					*pt++=*str++;
+				}
+			}
+			//strcpy(jd.text,str);
 			json_object_put(text);
 		}
 
@@ -160,14 +165,12 @@ int json_parser(char *buffer)
 			str=(char *)json_object_get_string(type);
 
 			while (strlen(pjf->name)) {
-				if(strcmp(str,pjf->name)==0) {
+				if(strcmp(str,pjf->name)==0)
 					(pjf->jfunc)(&jd);
-				}
 				pjf++;
 
 			}
 		}
-
 
 		json_object_put(type);
 		json_object_put(parsed_json);
@@ -187,6 +190,7 @@ int json_encoder(struct json_encoder *json_enc)
 	json_object_object_add(jobj,"event", jevent);
 	json_object_object_add(jobj,"type", jtype);
 
-	printf ("JSON TX %sn",json_object_to_json_string(jobj));
+	send_posix_event(json_object_to_json_string(jobj));
+
 	return 0;
 }
