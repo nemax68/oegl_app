@@ -79,11 +79,11 @@ void init_gui(void)
 	image_add(&jd);
 
 	memset(&jd,0,sizeof(jd));
-	sprintf(jd.text,"OPEN-EYES display driver Ver %s",API_VERSION);
+	sprintf(jd.text,"OEDD: display driver Ver %s",API_VERSION);
 	strcpy(jd.font.color,"#0000ff");
 
-	jd.font.size=10;
-	jd.pos.x=5;
+	jd.font.size=20;
+	jd.pos.x=20;
 	jd.pos.y=200;
 	jd.size.x=200;
 	jd.size.y=100;
