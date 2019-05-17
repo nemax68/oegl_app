@@ -1,16 +1,28 @@
-/*
- * json.c
- *
- *  Created on: 04/mag/2019
- *      Author: maxn
- */
+/**
+  * @file oe_json.c
+  *
+  * Copyright 2019 OPEN-EYES S.r.l.
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  **/
 
 #include<stdio.h>
 #include<string.h>
 
 #include<json-c/json.h>
-
 #include"oe_json.h"
+#include"oe_mqueue.h"
 #include"oe_gui.h"
 
 enum typefunc {
@@ -52,8 +64,6 @@ int json_parser(char *buffer)
 	const struct json_function *pjf=jf;
 
 	memset(&jd,0,sizeof(jd));
-
-	//printf("JSON: %s\n",buffer);
 
 	parsed_json = json_tokener_parse(buffer);
 	if (parsed_json) {
@@ -157,7 +167,6 @@ int json_parser(char *buffer)
 					*pt++=*str++;
 				}
 			}
-			//strcpy(jd.text,str);
 			json_object_put(text);
 		}
 
@@ -190,7 +199,7 @@ int json_encoder(struct json_encoder *json_enc)
 	json_object_object_add(jobj,"event", jevent);
 	json_object_object_add(jobj,"type", jtype);
 
-	send_posix_event(json_object_to_json_string(jobj));
+	send_posix_event((char *)json_object_to_json_string(jobj));
 
 	return 0;
 }

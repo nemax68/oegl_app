@@ -1,9 +1,22 @@
-/*
- * oe_button.c
- *
- *  Created on: 06/mag/2019
- *      Author: maxn
- */
+/**
+  * @file oe_button.c
+  *
+  * Copyright 2019 OPEN-EYES S.r.l.
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  **/
+
 
 
 /*********************
@@ -253,9 +266,7 @@ int button_del(struct json_decoder *jsond)
 	for (i=0;i<MAX_BUTTON_DESCRIPTOR;i++) {
 		if (bd.id[i]) {
 			if (strcmp(bd.id[i]->name,jsond->name)==0) {
-				lv_obj_del(bd.id[i]->button);
-				free(bd.id[i]);
-				bd.id[i]=NULL;
+				deref_btn_desc(&bd.id[i]);
 			}
 		}
 	}
@@ -269,10 +280,7 @@ int button_del_all(void)
 
 	for (i=0;i<MAX_BUTTON_DESCRIPTOR;i++) {
 		if (bd.id[i]) {
-			if(bd.id[i]->button)
-				lv_obj_del(bd.id[i]->button);
-			free(bd.id[i]);
-			bd.id[i]=NULL;
+			deref_btn_desc(&bd.id[i]);
 		}
 	}
 

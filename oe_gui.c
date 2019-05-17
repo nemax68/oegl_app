@@ -1,7 +1,22 @@
 /**
- * @file openeyes_gui.c
- *
- */
+  * @file oe_gui.c
+  *
+  * Copyright 2019 OPEN-EYES S.r.l.
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  **/
+
 
 /*********************
  *      INCLUDES
@@ -103,7 +118,7 @@ uint32_t color_conv(char *c)
 
 void set_text_style(lv_style_t *style, struct json_decoder *jsond)
 {
-	int rgb;
+	uint32_t rgb;
 
 	rgb=color_conv(jsond->font.color);
 	style->text.color = RGB_2_16bit(rgb);
@@ -121,7 +136,6 @@ void set_body_style(lv_style_t *style, struct json_decoder *jsond)
 	int rgb;
 
 	rgb=color_conv(jsond->color.main);
-
 	style->body.main_color = RGB_2_16bit(rgb);
 	rgb=color_conv(jsond->color.grad);
 	style->body.grad_color = RGB_2_16bit(rgb);
@@ -130,4 +144,5 @@ void set_body_style(lv_style_t *style, struct json_decoder *jsond)
 	style->body.border.color = RGB_2_16bit(rgb);
 	style->body.border.opa = LV_OPA_COVER;
 	style->body.border.width = jsond->border.size;
+
 }
