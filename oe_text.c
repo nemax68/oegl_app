@@ -178,7 +178,7 @@ static int word_len(char *str)
 		if(*pt==0x20)	return i;	// found space
 		if(*pt==0x0a)	return i;	// found new line
 		if(*pt==0x00)	return i;	// found end of string
-		*pt++;
+		pt++;
 	}while(i++<64);
 
 	return i;
