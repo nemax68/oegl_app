@@ -71,7 +71,10 @@ int json_parser(char *buffer)
 		// extract name
 		if( json_object_object_get_ex(parsed_json, "name", &name) ) {
 			str=(char *)json_object_get_string(name);
-			strcpy(jd.name,str);
+			if(strlen(str))
+				strcpy(jd.name,str);
+			else
+				sprintf(jd.name,"none");
 			json_object_put(name);
 		}
 
@@ -159,6 +162,7 @@ int json_parser(char *buffer)
 		if( json_object_object_get_ex(parsed_json, "text", &text) ) {
 			str=(char *)json_object_get_string(text);
 			pt=jd.text;
+			// sobstitute \n with 0x0a
 			while (*str) {
 				if( (*str==92) && (*(str+1)==110) ) {
 					*pt++=0x0a;
