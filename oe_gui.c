@@ -79,7 +79,7 @@ void init_gui(void)
 	image_add(&jd);
 
 	memset(&jd,0,sizeof(jd));
-	sprintf(jd.text,"OEDD: display driver Ver %s",API_VERSION);
+	sprintf(jd.text,"display driver Ver %s",API_VERSION);
 	strcpy(jd.font.color,"#0000ff");
 
 	jd.font.size=20;
